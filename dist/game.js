@@ -28,7 +28,7 @@ function glow(color,x,y,z,size,parent=scene){const m=new THREE.Mesh(new THREE.Sp
 const map=new THREE.Group();scene.add(map);
 box(128,4,90,'#304d47',0,-2.25,0,map);box(126,.35,88,'#4a7958',0,-.15,0,map);
 // Hand-painted-looking terrain patches and a shallow, luminous river.
-for(let i=0;i<200;i++){const x=rand(-61,61),z=rand(-42,42);if(Math.abs(x)<5)continue;const p=mesh(new THREE.CircleGeometry(rand(1.2,5.5),7),['#568a5c','#3c795d','#618e5c','#386e59'][i%4],x,.04,z,map);p.rotation.x=-Math.PI/2;p.rotation.z=rand(0,TAU);p.receiveShadow=true;p.castShadow=false;}
+for(let i=0;i<200;i++){const x=rand(-61,61),z=rand(-42,42);if(Math.abs(x)<5)continue;const p=mesh(new THREE.CircleGeometry(rand(1.2,5.5),7),['#568a5c','#3c795d','#618e5c','#386e59'][i%4],x,.04,z,map,{depthWrite:false});p.rotation.x=-Math.PI/2;p.rotation.z=rand(0,TAU);p.receiveShadow=true;p.castShadow=false;p.renderOrder=1;}
 const water=box(7,.12,89,'#278ba5',0,.02,0,map);water.material=new THREE.MeshStandardMaterial({color:'#2da9b9',roughness:.18,metalness:.24,transparent:true,opacity:.88});
 const waterLines=[];for(let i=0;i<65;i++){const l=box(rand(.2,1.1),.025,.045,'#9de9df',rand(-3.1,3.1),.11,rand(-43,43),map);l.castShadow=false;waterLines.push(l);}
 for(const side of[-1,1])for(let i=0;i<80;i++){const r=rand(.3,.9);const m=mesh(new THREE.DodecahedronGeometry(r,0),['#7c8873','#92967b','#5f7666'][i%3],side*rand(3.4,4.9),r*.2,rand(-43,43),map);m.scale.y=.6;m.rotation.set(rand(0,1),rand(0,4),0);}
@@ -48,9 +48,9 @@ for(let i=0;i<180;i++){const x=rand(-60,60),z=rand(-41,41);if(Math.abs(x)<6||lan
 // Batch static scenery by material rather than submitting every stone and leaf.
 map.updateMatrixWorld(true);
 const batches=new Map(),animated=new Set(waterLines);
-map.traverse(o=>{if(!o.isMesh||animated.has(o))return;const k=o.material.uuid+':'+o.castShadow;let b=batches.get(k);if(!b){b={material:o.material,shadow:o.castShadow,positions:[],normals:[]};batches.set(k,b);}const g=(o.geometry.index?o.geometry.toNonIndexed():o.geometry.clone()).applyMatrix4(o.matrixWorld);b.positions.push(g.attributes.position.array);b.normals.push(g.attributes.normal.array);g.dispose();o.geometry.dispose();});
+map.traverse(o=>{if(!o.isMesh||animated.has(o))return;const k=o.material.uuid+':'+o.castShadow+':'+o.renderOrder;let b=batches.get(k);if(!b){b={material:o.material,shadow:o.castShadow,renderOrder:o.renderOrder,positions:[],normals:[]};batches.set(k,b);}const g=(o.geometry.index?o.geometry.toNonIndexed():o.geometry.clone()).applyMatrix4(o.matrixWorld);b.positions.push(g.attributes.position.array);b.normals.push(g.attributes.normal.array);g.dispose();o.geometry.dispose();});
 map.clear();
-for(const b of batches.values()){const join=arrays=>{const out=new Float32Array(arrays.reduce((n,a)=>n+a.length,0));let n=0;for(const a of arrays){out.set(a,n);n+=a.length;}return out;};const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(join(b.positions),3));g.setAttribute('normal',new THREE.BufferAttribute(join(b.normals),3));g.computeBoundingSphere();const m=new THREE.Mesh(g,b.material);m.castShadow=b.shadow;m.receiveShadow=true;map.add(m);}
+for(const b of batches.values()){const join=arrays=>{const out=new Float32Array(arrays.reduce((n,a)=>n+a.length,0));let n=0;for(const a of arrays){out.set(a,n);n+=a.length;}return out;};const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(join(b.positions),3));g.setAttribute('normal',new THREE.BufferAttribute(join(b.normals),3));g.computeBoundingSphere();const m=new THREE.Mesh(g,b.material);m.castShadow=b.shadow;m.receiveShadow=true;m.renderOrder=b.renderOrder;map.add(m);}
 for(const l of waterLines)map.add(l);
 const destruction=createDestruction(THREE,scene,forest,{touchMode});
 const structures=[],shrines=[],agents=[],projectiles=[],remoteProjectiles=[],fx=[],floaters=[],walls=[];let wallSeq=0;
