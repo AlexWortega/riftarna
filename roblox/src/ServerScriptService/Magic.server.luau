@@ -32,28 +32,40 @@ end
 local function addFire(model)
 	if burning[model] or model:GetAttribute("Destroyed") then return end
 	if not model.PrimaryPart then return end
-	local anchor = Instance.new("Part")
-	anchor.Name = "Burning source"
-	anchor.Size = Vector3.new(0.2, 0.2, 0.2)
-	anchor.Transparency = 1
-	anchor.Anchored, anchor.CanCollide, anchor.CanQuery = true, false, false
-	anchor.Position = center(model) + Vector3.new(0, model.Name:match("Hut") and 10 or model.Name:match("Pine") and 6 or 2, 0)
-	anchor.Parent = model
-	local flame = Instance.new("Fire")
-	flame.Name = "RiftboundFire"
-	flame.Color = Color3.fromRGB(255, 108, 34)
-	flame.SecondaryColor = Color3.fromRGB(255, 197, 71)
-	flame.Heat = 6
-	flame.Size = model.Name:match("Hut") and 11 or 5
-	flame.Parent = anchor
-	local smoke = Instance.new("Smoke")
-	smoke.Name = "RiftboundSmoke"
-	smoke.Color = Color3.fromRGB(33, 31, 30)
-	smoke.Opacity = 0.42
-	smoke.RiseVelocity = 7
-	smoke.Size = 9
-	smoke.Parent = anchor
-	burning[model] = {age = 0, anchor = anchor}
+	local isHut = model.Name:match("Hut") ~= nil
+	local offsets = isHut and {Vector3.new(0, 6, 8.9), Vector3.new(0, 15.5, 0)} or {Vector3.new(0, model.Name:match("Pine") and 8 or 2, 0)}
+	local anchors = {}
+	for index, offset in ipairs(offsets) do
+		local anchor = Instance.new("Part")
+		anchor.Name = "Burning source"
+		anchor.Size = Vector3.new(0.2, 0.2, 0.2)
+		anchor.Transparency = 1
+		anchor.Anchored, anchor.CanCollide, anchor.CanQuery = true, false, false
+		anchor.Position = center(model) + offset
+		anchor.Parent = model
+		local flame = Instance.new("Fire")
+		flame.Name = "RiftboundFire"
+		flame.Color = Color3.fromRGB(255, 108, 34)
+		flame.SecondaryColor = Color3.fromRGB(255, 197, 71)
+		flame.Heat = 7
+		flame.Size = isHut and (index == 1 and 7 or 9) or 5
+		flame.Parent = anchor
+		if index == #offsets then
+			local smoke = Instance.new("Smoke")
+			smoke.Name = "RiftboundSmoke"
+			smoke.Color = Color3.fromRGB(33, 31, 30)
+			smoke.Opacity = 0.42
+			smoke.RiseVelocity = 7
+			smoke.Size = 9
+			smoke.Parent = anchor
+		end
+		local light = Instance.new("PointLight")
+		light.Color = Color3.fromRGB(255, 107, 49)
+		light.Brightness, light.Range = 2.2, 20
+		light.Parent = anchor
+		table.insert(anchors, anchor)
+	end
+	burning[model] = {age = 0, anchors = anchors}
 	remote:FireAllClients("ignite", center(model))
 end
 
@@ -61,7 +73,10 @@ local function destroyModel(model)
 	if model:GetAttribute("Destroyed") then return end
 	model:SetAttribute("Destroyed", true)
 	local state = burning[model]
-	if state then state.anchor:Destroy(); burning[model] = nil end
+	if state then
+		for _, anchor in ipairs(state.anchors) do anchor:Destroy() end
+		burning[model] = nil
+	end
 	local pos = center(model)
 	remote:FireAllClients("collapse", pos)
 	local count = 0

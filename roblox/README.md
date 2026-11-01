@@ -58,8 +58,11 @@ each file with `luau-compile --binary` and rebuild with Rojo.
 Rojo builds the `.rbxlx` and the Luau parser accepts all scripts. The same
 scripts were loaded into a Studio test place through MCP and checked in play
 mode: first-person camera, movement, HUD, fire selection and casting worked.
+An aimed fire cast ignited a hut, spread to a fence and nearby trees, and the
+hut roof fell after burning. The test used temporary diagnostic prints, which
+were removed from the final scripts.
 The first playtest revealed an infinite wait for `PlayerModule`; it was fixed.
 The village now uses overcast clouds, realistic lighting, textured built-in
-materials and denser details. The footage's photorealistic houses, trees,
+materials, loose straw and bare trees. The footage's photorealistic houses, trees,
 characters and hand animation still require higher fidelity imported meshes,
 textures and animation; the bundled FBX kit is lower fidelity than the video.

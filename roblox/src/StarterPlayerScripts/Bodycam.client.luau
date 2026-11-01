@@ -75,11 +75,15 @@ local function makeViewPart(name, size, material, color)
 end
 local leftArm = makeViewPart("Left sleeve", Vector3.new(0.48, 1.1, 0.5), Enum.Material.Fabric, Color3.fromRGB(38, 65, 105))
 local rightArm = makeViewPart("Right sleeve", Vector3.new(0.48, 1.1, 0.5), Enum.Material.Fabric, Color3.fromRGB(38, 65, 105))
-local leftHand = makeViewPart("Left hand", Vector3.new(0.4, 0.55, 0.4), Enum.Material.SmoothPlastic, Color3.fromRGB(174, 137, 111))
-local rightHand = makeViewPart("Right hand", Vector3.new(0.4, 0.55, 0.4), Enum.Material.SmoothPlastic, Color3.fromRGB(174, 137, 111))
+local skin = Color3.fromRGB(174, 137, 111)
+local leftHand = makeViewPart("Open palm", Vector3.new(0.5, 0.55, 0.24), Enum.Material.SmoothPlastic, skin)
+leftHand.Shape = Enum.PartType.Ball
+local rightHand = makeViewPart("Grip", Vector3.new(0.43, 0.49, 0.31), Enum.Material.SmoothPlastic, skin)
+rightHand.Shape = Enum.PartType.Ball
 local staff = makeViewPart("Charred staff", Vector3.new(0.17, 0.17, 2.3), Enum.Material.Wood, Color3.fromRGB(54, 41, 32))
 local staffTip = makeViewPart("Staff ember", Vector3.new(0.32, 0.32, 0.32), Enum.Material.Neon, Color3.fromRGB(243, 110, 53))
 staffTip.Shape = Enum.PartType.Ball
+local viewParts = {leftArm, rightArm, leftHand, rightHand, staff, staffTip}
 
 local function refreshSpell()
 	local spell = Rules.compile(queue)
@@ -244,7 +248,7 @@ RunService:BindToRenderStep("RiftboundBodycam", Enum.RenderPriority.Camera.Value
 	for _, descendant in ipairs(character:GetDescendants()) do
 		if descendant:IsA("BasePart") then descendant.LocalTransparencyModifier = 1 end
 	end
-	if workspace.CurrentCamera ~= camera then camera = workspace.CurrentCamera; for _, p in ipairs({leftArm, rightArm, leftHand, rightHand, staff, staffTip}) do p.Parent = camera end end
+	if workspace.CurrentCamera ~= camera then camera = workspace.CurrentCamera; for _, p in ipairs(viewParts) do p.Parent = camera end end
 	UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
 	UserInputService.MouseIconEnabled = false
 	camera.CameraType = Enum.CameraType.Scriptable

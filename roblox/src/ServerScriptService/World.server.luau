@@ -25,14 +25,22 @@ local function part(parent, name, size, cf, material, color, anchored)
 	return p
 end
 
-local mud = Color3.fromRGB(62, 55, 46)
 local timber = Color3.fromRGB(83, 64, 47)
 local plaster = Color3.fromRGB(169, 153, 126)
-local straw = Color3.fromRGB(117, 93, 57)
+local straw = Color3.fromRGB(164, 137, 91)
 local stone = Color3.fromRGB(90, 87, 78)
 
 part(world, "Ground", Vector3.new(280, 2, 260), CFrame.new(0, -1, 0), Enum.Material.Ground, Color3.fromRGB(51, 57, 44))
-part(world, "Village road", Vector3.new(20, 0.12, 180), CFrame.new(0, 0.07, -25), Enum.Material.Mud, mud)
+part(world, "Village road", Vector3.new(20, 0.12, 180), CFrame.new(0, 0.07, -25), Enum.Material.Ground, Color3.fromRGB(105, 86, 60))
+local strawRandom = Random.new(417)
+for i = 1, 620 do
+	local x = strawRandom:NextNumber(-10, 10)
+	local z = strawRandom:NextNumber(-112, 63)
+	local length = strawRandom:NextNumber(0.45, 1.6)
+	local tint = strawRandom:NextInteger(-17, 17)
+	local strand = part(world, "Loose straw", Vector3.new(0.055, 0.025, length), CFrame.new(x, 0.151, z) * CFrame.Angles(0, strawRandom:NextNumber(-math.pi, math.pi), 0), Enum.Material.Grass, Color3.fromRGB(153 + tint, 127 + tint, 75 + tint))
+	strand.CanCollide, strand.CanTouch, strand.CanQuery = false, false, false
+end
 for i = 1, 105 do
 	local z = 70 - i * 2.1
 	local side = i % 2 == 0 and -1 or 1
@@ -40,19 +48,39 @@ for i = 1, 105 do
 	local verge = part(world, "Straw and mud verge", Vector3.new(0.6 + (i % 4) * 0.3, 0.04, 0.8 + (i % 5) * 0.5), CFrame.new(x, 0.12, z) * CFrame.Angles(0, i * 2.4, 0), Enum.Material.Grass, Color3.fromRGB(85 + (i % 3) * 8, 79 + (i % 4) * 5, 52))
 	verge.CanCollide = false
 end
-for i = 1, 45 do
-	local z = 55 - i * 3.5
-	local x = math.sin(i * 12.4) * 8
-	local puddle = part(world, "Puddle", Vector3.new(1 + (i % 4), 0.02, 1.5 + (i % 3)), CFrame.new(x, 0.15, z), Enum.Material.Glass, Color3.fromRGB(50, 55, 52))
-	puddle.Transparency, puddle.Reflectance, puddle.CanCollide = 0.62, 0.02, false
-end
-
 local flammables = Instance.new("Folder")
 flammables.Name = "Flammables"
 flammables.Parent = world
 local targets = Instance.new("Folder")
 targets.Name = "Targets"
 targets.Parent = world
+
+-- Winter silhouettes beyond the huts keep the misty village from looking like a flat tree line.
+local function bareBranch(parent, from, to, width)
+	local span = to - from
+	local branch = part(parent, "Bare branch", Vector3.new(width, span.Magnitude, width), CFrame.lookAt((from + to) / 2, to) * CFrame.Angles(math.rad(90), 0, 0), Enum.Material.Wood, Color3.fromRGB(68, 65, 59))
+	branch.CanCollide = false
+end
+for i = 1, 14 do
+	local z = 82 - i * 13
+	local x = (i % 2 == 0 and 1 or -1) * (46 + (i % 4) * 6)
+	local deadTree = Instance.new("Model")
+	deadTree.Name = "Bare tree " .. i
+	deadTree:SetAttribute("Flammable", true)
+	deadTree:SetAttribute("Health", 55)
+	deadTree.Parent = flammables
+	local trunk = part(deadTree, "Trunk", Vector3.new(1.1, 14, 1.1), CFrame.new(x, 7, z), Enum.Material.Wood, Color3.fromRGB(68, 65, 59))
+	deadTree.PrimaryPart = trunk
+	for level = 1, 5 do
+		for side = -1, 1, 2 do
+			local start = Vector3.new(x, 4 + level * 2.1, z)
+			local tip = start + Vector3.new(side * (4.8 - level * 0.35), 3.3 + level * 0.15, ((i + level) % 3 - 1) * 2.2)
+			bareBranch(deadTree, start, tip, 0.5 - level * 0.055)
+			bareBranch(deadTree, tip, tip + Vector3.new(side * 1.4, 2.2, 0.8), 0.15)
+		end
+	end
+end
+
 local artKit = ServerStorage:FindFirstChild("RiftboundArt")
 local function placeArt(name, cf, parent)
 	local template = artKit and artKit:FindFirstChild(name)
