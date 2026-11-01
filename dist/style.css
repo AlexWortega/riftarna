@@ -52,9 +52,10 @@
 @media(orientation:landscape){.touch-ui footer{left:150px;right:150px;width:auto;max-width:390px;margin:0 auto;transform:none}}
 @media(orientation:landscape) and (min-width:740px){.touch-ui footer{max-width:470px}}
 /* Nickname lobby lives in the existing intro card. */
+.intro{z-index:5;max-height:75dvh;overflow-y:auto}
 .intro:has(.online-lobby:not(.hidden)){top:12%;width:min(365px,94vw);max-height:80vh;overflow:auto;z-index:5}
 .intro:has(.online-lobby:not(.hidden)) h2,.intro:has(.online-lobby:not(.hidden))>p,.intro:has(.online-lobby:not(.hidden)) .intro-rule,.intro:has(.online-lobby:not(.hidden)) .intro-mode{display:none}
 .online-form{margin:17px 0 12px}.online-form label,.online-lobby label{display:block;font-size:9px;letter-spacing:1.5px;color:#d6c58e;margin:0 0 7px}
 .online-row{display:flex;gap:6px}.online-row input{min-width:0;flex:1;height:40px;padding:0 10px;background:#091a19c9;border:1px solid #9ba88a70;color:#f4edcf;font-size:13px;outline:none}.online-row input:focus{border-color:#e0cf91}.online-row button,.incoming-invite button{border:1px solid #dbcb9a80;background:#c4b27f;color:#13251f;padding:0 10px;font-size:9px;font-weight:bold;letter-spacing:.5px;white-space:nowrap}.online-lobby{padding:12px;background:#0a1e1bc7;border:1px solid #c2b7845e;margin-bottom:10px}.online-lobby p{margin:0 0 10px!important;font:11px/1.5 Arial!important;color:#c5d5b8!important}.online-players{font:10px/1.5 Arial;color:#9fb7ab;margin-top:10px}.online-players button{background:none;border:0;color:#dfcf9a;text-decoration:underline;cursor:pointer;padding:0 2px}.incoming-invite{margin-top:12px;border-top:1px solid #b6ad7566;padding-top:10px;color:#e1d2a2;font-size:11px}.incoming-invite div{display:flex;gap:6px;margin-top:8px}.incoming-invite button{height:30px}.incoming-invite button:last-child{background:#2b4035;color:#e0d4b0}
 body.online-match #pauseBtn{display:none}
-@media(max-width:600px){.intro:has(.online-lobby:not(.hidden)){top:12%;left:3%;padding:18px}.online-row input{width:120px}}
+@media(max-width:600px){.intro{width:min(320px,calc(100vw - 26px))}.intro:has(.online-lobby:not(.hidden)){top:12%;left:3%;padding:18px}.online-row input{width:120px}}
