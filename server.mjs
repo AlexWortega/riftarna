@@ -90,6 +90,7 @@ export function createApp() {
     if (!input || typeof input!=='object') return;
     const safe={};
     if (input.kind==='move' && Number.isFinite(input.x) && Number.isFinite(input.z)) {safe.kind='move';safe.x=Math.max(-60,Math.min(60,input.x));safe.z=Math.max(-39,Math.min(39,input.z));}
+    else if (input.kind==='dash' && Number.isFinite(input.x) && Number.isFinite(input.z)) {safe.kind='dash';safe.x=Math.max(-60,Math.min(60,input.x));safe.z=Math.max(-39,Math.min(39,input.z));}
     else if (input.kind==='pad' && Number.isFinite(input.x) && Number.isFinite(input.y)) {safe.kind='pad';safe.x=Math.max(-1,Math.min(1,input.x));safe.y=Math.max(-1,Math.min(1,input.y));}
     else if (input.kind==='cast' && Array.isArray(input.queue) && input.queue.length<=5 && ['self','area','forward'].includes(input.mode) && Number.isFinite(input.x) && Number.isFinite(input.z)) {
      const elements=['water','life','shield','cold','lightning','arcane','earth','fire'];

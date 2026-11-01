@@ -23,6 +23,7 @@ test('nickname login, invite, remote controls, state relay and disconnect', asyn
   bob.send({type:'accept',id:invite.id});const [aMatch,bMatch]=await Promise.all([alice.next('match'),bob.next('match')]);
   assert.equal(aMatch.role,'host');assert.equal(bMatch.role,'guest');assert.equal(aMatch.id,bMatch.id);
   bob.send({type:'input',input:{kind:'move',x:1000,z:-1000}});assert.deepEqual((await alice.next('input')).input,{kind:'move',x:60,z:-39});
+  bob.send({type:'input',input:{kind:'dash',x:-20,z:4}});assert.deepEqual((await alice.next('input')).input,{kind:'dash',x:-20,z:4});
   alice.send({type:'state',state:{time:1,agents:[{hp:1000}]}});assert.equal((await bob.next('state')).state.time,1);
   const response=await fetch(`http://127.0.0.1:${app.http.address().port}/health`);assert.deepEqual(await response.json(),{ok:true,players:2});
   bob.ws.close();assert.match((await alice.next('match_end')).reason,/Bob/);
