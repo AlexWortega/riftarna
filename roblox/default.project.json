@@ -28,7 +28,9 @@
         "Brightness": 1.4,
         "EnvironmentDiffuseScale": 0.35,
         "EnvironmentSpecularScale": 0.4,
-        "GlobalShadows": true
+        "GlobalShadows": true,
+        "LightingStyle": "Realistic",
+        "PrioritizeLightingQuality": true
       }
     }
   }

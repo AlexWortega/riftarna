@@ -7,6 +7,10 @@ local ServerStorage = game:GetService("ServerStorage")
 
 local old = Workspace:FindFirstChild("RiftboundWorld")
 if old then old:Destroy() end
+local baseplate = Workspace:FindFirstChild("Baseplate")
+if baseplate then baseplate:Destroy() end
+local defaultSpawn = Workspace:FindFirstChild("SpawnLocation")
+if defaultSpawn then defaultSpawn:Destroy() end
 local world = Instance.new("Folder")
 world.Name = "RiftboundWorld"
 world.Parent = Workspace
@@ -29,11 +33,18 @@ local stone = Color3.fromRGB(90, 87, 78)
 
 part(world, "Ground", Vector3.new(280, 2, 260), CFrame.new(0, -1, 0), Enum.Material.Ground, Color3.fromRGB(51, 57, 44))
 part(world, "Village road", Vector3.new(20, 0.12, 180), CFrame.new(0, 0.07, -25), Enum.Material.Mud, mud)
+for i = 1, 105 do
+	local z = 70 - i * 2.1
+	local side = i % 2 == 0 and -1 or 1
+	local x = side * (9.5 + (i % 6) * 1.1)
+	local verge = part(world, "Straw and mud verge", Vector3.new(0.6 + (i % 4) * 0.3, 0.04, 0.8 + (i % 5) * 0.5), CFrame.new(x, 0.12, z) * CFrame.Angles(0, i * 2.4, 0), Enum.Material.Grass, Color3.fromRGB(85 + (i % 3) * 8, 79 + (i % 4) * 5, 52))
+	verge.CanCollide = false
+end
 for i = 1, 45 do
 	local z = 55 - i * 3.5
 	local x = math.sin(i * 12.4) * 8
-	local puddle = part(world, "Puddle", Vector3.new(1 + (i % 4), 0.02, 1.5 + (i % 3)), CFrame.new(x, 0.15, z), Enum.Material.Glass, Color3.fromRGB(72, 83, 79))
-	puddle.Transparency, puddle.Reflectance, puddle.CanCollide = 0.34, 0.12, false
+	local puddle = part(world, "Puddle", Vector3.new(1 + (i % 4), 0.02, 1.5 + (i % 3)), CFrame.new(x, 0.15, z), Enum.Material.Glass, Color3.fromRGB(50, 55, 52))
+	puddle.Transparency, puddle.Reflectance, puddle.CanCollide = 0.62, 0.02, false
 end
 
 local flammables = Instance.new("Folder")
@@ -73,29 +84,52 @@ local function hut(x, z, side, index)
 	model.Parent = flammables
 	local w, d = 18, 16
 	part(model, "Stone foundation", Vector3.new(w + 1, 1.2, d + 1), CFrame.new(x, 0.6, z), Enum.Material.Cobblestone, stone)
-	part(model, "Rear wall", Vector3.new(w, 9, 1), CFrame.new(x, 5.5, z - d / 2), Enum.Material.Concrete, plaster)
-	part(model, "Front wall", Vector3.new(w, 9, 1), CFrame.new(x, 5.5, z + d / 2), Enum.Material.Concrete, plaster)
+	part(model, "Rear wall", Vector3.new(w, 9, 1), CFrame.new(x, 5.5, z - d / 2), Enum.Material.Sandstone, plaster)
+	part(model, "Front wall", Vector3.new(w, 9, 1), CFrame.new(x, 5.5, z + d / 2), Enum.Material.Sandstone, plaster)
 	for _, dx in ipairs({-w / 2, w / 2}) do
-		part(model, "Side wall", Vector3.new(1, 9, d), CFrame.new(x + dx, 5.5, z), Enum.Material.Concrete, plaster)
+		part(model, "Side wall", Vector3.new(1, 9, d), CFrame.new(x + dx, 5.5, z), Enum.Material.Sandstone, plaster)
 	end
 	for _, dx in ipairs({-w / 2 + 0.7, w / 2 - 0.7}) do
 		for _, dz in ipairs({-d / 2 + 0.7, d / 2 - 0.7}) do
 			part(model, "Wood post", Vector3.new(0.9, 10.5, 0.9), CFrame.new(x + dx, 5.8, z + dz), Enum.Material.Wood, timber)
 		end
 	end
+	for _, dx in ipairs({-6, 0, 6}) do
+		part(model, "Timber frame", Vector3.new(0.55, 8.5, 0.48), CFrame.new(x + dx, 5.4, z + d / 2 + 0.55), Enum.Material.Wood, timber)
+	end
+	for _, dy in ipairs({2.6, 8.8}) do
+		part(model, "Timber beam", Vector3.new(w, 0.55, 0.5), CFrame.new(x, dy, z + d / 2 + 0.55), Enum.Material.Wood, timber)
+	end
+	for _, dx in ipairs({-4.5, 4.5}) do
+		part(model, "Cross brace", Vector3.new(0.44, 5.2, 0.5), CFrame.new(x + dx, 5.7, z + d / 2 + 0.72) * CFrame.Angles(0, 0, math.rad(dx > 0 and 30 or -30)), Enum.Material.Wood, timber)
+	end
 	for _, ridgeSide in ipairs({-1, 1}) do
 		local edge = Vector3.new(x + ridgeSide * (w / 2 + 1), 9.6, z)
 		local ridge = Vector3.new(x, 14.8, z)
 		local center = (edge + ridge) / 2
-		local roof = part(model, "Thatch roof", Vector3.new(12, 0.8, d + 3), CFrame.new(center) * CFrame.Angles(0, 0, -ridgeSide * math.rad(30)), Enum.Material.Grass, straw)
+		local roof = part(model, "Thatch roof", Vector3.new(12, 0.8, d + 3), CFrame.new(center) * CFrame.Angles(0, 0, -ridgeSide * math.rad(30)), Enum.Material.Ground, straw)
 		roof:SetAttribute("Roof", true)
+		for j = 1, 12 do
+			local fringe = part(model, "Hanging thatch", Vector3.new(0.22, 0.7 + (j % 3) * 0.18, 0.9), CFrame.new(x + ridgeSide * (w / 2 + 1.5), 9.25, z - d / 2 - 1 + j * 1.45), Enum.Material.Grass, Color3.fromRGB(132 + j % 3 * 6, 113 + j % 4 * 4, 68))
+			fringe.CanCollide = false
+		end
 	end
 	local door = part(model, "Door", Vector3.new(3.8, 6, 0.3), CFrame.new(x - side * 4, 4, z + d / 2 + 0.4), Enum.Material.WoodPlanks, timber)
 	door.CanCollide = false
+	part(model, "Door iron", Vector3.new(3.9, 0.2, 0.15), CFrame.new(x - side * 4, 5.2, z + d / 2 + 0.65), Enum.Material.Metal, Color3.fromRGB(48, 47, 43))
+	part(model, "Door handle", Vector3.new(0.25, 0.35, 0.25), CFrame.new(x - side * 4 + 1.15, 3.7, z + d / 2 + 0.72), Enum.Material.Metal, Color3.fromRGB(89, 77, 54))
 	for j = 1, 3 do
 		part(model, "Window", Vector3.new(1.7, 2, 0.2), CFrame.new(x + j * 3 - 7, 6, z + d / 2 + 0.6), Enum.Material.Glass, Color3.fromRGB(41, 37, 28)).Transparency = 0.25
 	end
 	model.PrimaryPart = model:FindFirstChild("Stone foundation")
+	for j = 1, 5 do
+		local stack = part(model, "Firewood", Vector3.new(0.8, 0.8, 4.2), CFrame.new(x + (j - 3) * 0.85, 1.1 + (j % 2) * 0.45, z + d / 2 + 1.6), Enum.Material.Wood, Color3.fromRGB(75 + j * 3, 54 + j * 2, 39))
+		stack.Shape = Enum.PartType.Cylinder
+	end
+	for j = 1, 2 do
+		local barrel = part(model, "Barrel", Vector3.new(2.3, 2.8, 2.3), CFrame.new(x + (j == 1 and -7 or 7), 1.4, z + d / 2 + 3.6), Enum.Material.WoodPlanks, Color3.fromRGB(83, 62, 42))
+		barrel.Shape = Enum.PartType.Cylinder
+	end
 	return model
 end
 
@@ -150,9 +184,13 @@ for i = 1, 38 do
 	tree:SetAttribute("Health", 65)
 	tree.Parent = flammables
 	part(tree, "Trunk", Vector3.new(1.4, 9, 1.4), CFrame.new(x, 4.5, z), Enum.Material.Wood, timber)
-	for level = 1, 3 do
-		local cone = part(tree, "Needles", Vector3.new(9 - level * 1.2, 4.2, 9 - level * 1.2), CFrame.new(x, 6 + level * 2.7, z), Enum.Material.Grass, Color3.fromRGB(38 + level * 3, 60 + level * 4, 45))
-		cone.Shape = Enum.PartType.Ball
+	for level = 1, 4 do
+		for branch = 1, 5 do
+			local angle = branch * math.pi * 2 / 5 + level * 0.4
+			local radius = (5 - level) * 0.8
+			local leaf = part(tree, "Needles", Vector3.new(3.8, 3.6, 5.4), CFrame.new(x + math.cos(angle) * radius, 5 + level * 2.4, z + math.sin(angle) * radius) * CFrame.Angles(0, angle, math.rad(18)), Enum.Material.LeafyGrass, Color3.fromRGB(38 + level * 2, 55 + level * 3, 43))
+			leaf.Shape = Enum.PartType.Ball
+		end
 	end
 	tree.PrimaryPart = tree:FindFirstChild("Trunk")
 end
@@ -164,12 +202,15 @@ for i = 1, 4 do
 	target:SetAttribute("Health", 220)
 	target.Parent = targets
 	local x = i % 2 == 0 and 4 or -4
-	part(target, "Body", Vector3.new(2.6, 3.2, 1.7), CFrame.new(x, 3.1, z), Enum.Material.Fabric, Color3.fromRGB(91, 69, 58))
+	part(target, "Body", Vector3.new(2.6, 3.6, 1.7), CFrame.new(x, 3.1, z), Enum.Material.Fabric, Color3.fromRGB(104, 28, 39))
 	part(target, "Head", Vector3.new(1.4, 1.4, 1.4), CFrame.new(x, 5.4, z), Enum.Material.SmoothPlastic, Color3.fromRGB(124, 104, 85)).Shape = Enum.PartType.Ball
-	part(target, "Helmet", Vector3.new(1.8, 0.7, 1.8), CFrame.new(x, 6.1, z), Enum.Material.Metal, stone)
+	local hood = part(target, "Red hood", Vector3.new(2.3, 2.2, 2.3), CFrame.new(x, 6.1, z), Enum.Material.Fabric, Color3.fromRGB(112, 28, 39))
+	hood.Shape = Enum.PartType.Ball
+	local point = part(target, "Hood tip", Vector3.new(1.2, 1.8, 1.2), CFrame.new(x, 7.25, z - 0.35), Enum.Material.Fabric, Color3.fromRGB(112, 28, 39))
+	point.Shape = Enum.PartType.Ball
 	for _, side in ipairs({-1, 1}) do
-		part(target, "Arm", Vector3.new(0.8, 2.8, 0.8), CFrame.new(x + side * 1.7, 3.2, z), Enum.Material.Fabric, Color3.fromRGB(75, 65, 52))
-		part(target, "Leg", Vector3.new(0.8, 2.7, 0.8), CFrame.new(x + side * 0.65, 1.4, z), Enum.Material.Fabric, Color3.fromRGB(55, 51, 43))
+		part(target, "Arm", Vector3.new(0.8, 2.8, 0.8), CFrame.new(x + side * 1.7, 3.2, z), Enum.Material.Fabric, Color3.fromRGB(88, 29, 39))
+		part(target, "Leg", Vector3.new(0.8, 2.7, 0.8), CFrame.new(x + side * 0.65, 1.4, z), Enum.Material.Fabric, Color3.fromRGB(55, 43, 43))
 	end
 	target.PrimaryPart = target:FindFirstChild("Body")
 end
@@ -183,17 +224,26 @@ spawn.Anchored = true
 spawn.Neutral = true
 spawn.Parent = world
 
-Lighting.Ambient = Color3.fromRGB(112, 117, 116)
-Lighting.OutdoorAmbient = Color3.fromRGB(118, 124, 128)
+Lighting.Ambient = Color3.fromRGB(158, 165, 166)
+Lighting.OutdoorAmbient = Color3.fromRGB(176, 180, 181)
+Lighting.ClockTime = 11.2
+Lighting.Brightness = 1.75
+Lighting.ExposureCompensation = 0.12
+Lighting.ShadowSoftness = 0.72
 Lighting.FogColor = Color3.fromRGB(128, 135, 137)
-Lighting.FogStart = 65
-Lighting.FogEnd = 240
+Lighting.FogStart = 45
+Lighting.FogEnd = 205
 local atmosphere = Instance.new("Atmosphere")
-atmosphere.Density = 0.38
-atmosphere.Haze = 1.7
-atmosphere.Color = Color3.fromRGB(175, 181, 178)
+atmosphere.Density = 0.48
+atmosphere.Haze = 2.5
+atmosphere.Color = Color3.fromRGB(186, 190, 187)
 atmosphere.Decay = Color3.fromRGB(113, 122, 128)
 atmosphere.Parent = Lighting
+local clouds = Instance.new("Clouds")
+clouds.Cover = 0.9
+clouds.Density = 0.85
+clouds.Color = Color3.fromRGB(170, 175, 172)
+clouds.Parent = Workspace.Terrain
 local colorCorrection = Instance.new("ColorCorrectionEffect")
 colorCorrection.Contrast = 0.13
 colorCorrection.Saturation = -0.19

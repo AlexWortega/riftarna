@@ -6,7 +6,6 @@ local TweenService = game:GetService("TweenService")
 local Debris = game:GetService("Debris")
 
 local player = Players.LocalPlayer
-local playerControls = require(player:WaitForChild("PlayerScripts"):WaitForChild("PlayerModule")):GetControls()
 local shared = ReplicatedStorage:WaitForChild("Riftbound")
 local Rules = require(shared:WaitForChild("SpellRules"))
 local remote = shared:WaitForChild("SpellEvent")
@@ -40,14 +39,14 @@ local function label(name, text, size, position, anchor, color, font)
 end
 
 local white = Color3.fromRGB(229, 236, 234)
-local title = label("Bodycam", "RIFTBOUND // VILLAGE 01", UDim2.fromOffset(270, 24), UDim2.fromOffset(22, 18), Vector2.new(0, 0), white)
+local title = label("Bodycam", "RIFTBOUND // VILLAGE 01", UDim2.fromOffset(270, 20), UDim2.fromOffset(205, 22), Vector2.new(0, 0), white)
 title.TextXAlignment = Enum.TextXAlignment.Left
 local clock = label("Clock", "● REC", UDim2.fromOffset(310, 26), UDim2.new(1, -25, 0, 18), Vector2.new(1, 0), white)
 clock.TextXAlignment = Enum.TextXAlignment.Right
 local crosshair = label("Crosshair", "+", UDim2.fromOffset(18, 18), UDim2.fromScale(0.5, 0.5), Vector2.new(0.5, 0.5), white)
 crosshair.TextTransparency = 0.25
 local spellName = label("Spell", "ЗАКЛИНАНИЕ НЕ СОБРАНО", UDim2.fromOffset(350, 28), UDim2.new(0.5, 0, 1, -82), Vector2.new(0.5, 1), white)
-local controls = label("Controls", "WASD — ДВИЖЕНИЕ   SHIFT — БЕГ   Q — ОГОНЬ   E — МОЛНИЯ   ЛКМ — КАСТ   C — ОЧИСТИТЬ", UDim2.new(0.75, 0, 0, 23), UDim2.new(0.5, 0, 1, -16), Vector2.new(0.5, 1), white)
+local controls = label("Controls", "WASD — ДВИЖЕНИЕ   SHIFT — БЕГ   Q — ОГОНЬ   E — МОЛНИЯ   ЛКМ/F — КАСТ   C — ОЧИСТИТЬ", UDim2.new(0.75, 0, 0, 23), UDim2.new(0.5, 0, 1, -16), Vector2.new(0.5, 1), white)
 controls.TextTransparency = 0.2
 local hitFlash = Instance.new("Frame")
 hitFlash.Size = UDim2.fromScale(1, 1)
@@ -74,12 +73,12 @@ local function makeViewPart(name, size, material, color)
 	p.Parent = camera
 	return p
 end
-local leftArm = makeViewPart("Left sleeve", Vector3.new(0.8, 2.1, 0.82), Enum.Material.Fabric, Color3.fromRGB(38, 65, 105))
-local rightArm = makeViewPart("Right sleeve", Vector3.new(0.8, 2.1, 0.82), Enum.Material.Fabric, Color3.fromRGB(38, 65, 105))
-local leftHand = makeViewPart("Left hand", Vector3.new(0.56, 0.75, 0.56), Enum.Material.SmoothPlastic, Color3.fromRGB(174, 137, 111))
-local rightHand = makeViewPart("Right hand", Vector3.new(0.56, 0.75, 0.56), Enum.Material.SmoothPlastic, Color3.fromRGB(174, 137, 111))
-local staff = makeViewPart("Charred staff", Vector3.new(0.25, 0.25, 4.4), Enum.Material.Wood, Color3.fromRGB(54, 41, 32))
-local staffTip = makeViewPart("Staff ember", Vector3.new(0.45, 0.45, 0.45), Enum.Material.Neon, Color3.fromRGB(243, 110, 53))
+local leftArm = makeViewPart("Left sleeve", Vector3.new(0.48, 1.1, 0.5), Enum.Material.Fabric, Color3.fromRGB(38, 65, 105))
+local rightArm = makeViewPart("Right sleeve", Vector3.new(0.48, 1.1, 0.5), Enum.Material.Fabric, Color3.fromRGB(38, 65, 105))
+local leftHand = makeViewPart("Left hand", Vector3.new(0.4, 0.55, 0.4), Enum.Material.SmoothPlastic, Color3.fromRGB(174, 137, 111))
+local rightHand = makeViewPart("Right hand", Vector3.new(0.4, 0.55, 0.4), Enum.Material.SmoothPlastic, Color3.fromRGB(174, 137, 111))
+local staff = makeViewPart("Charred staff", Vector3.new(0.17, 0.17, 2.3), Enum.Material.Wood, Color3.fromRGB(54, 41, 32))
+local staffTip = makeViewPart("Staff ember", Vector3.new(0.32, 0.32, 0.32), Enum.Material.Neon, Color3.fromRGB(243, 110, 53))
 staffTip.Shape = Enum.PartType.Ball
 
 local function refreshSpell()
@@ -90,6 +89,18 @@ local function refreshSpell()
 	else spellName.Text = "Q ОГОНЬ    E МОЛНИЯ    Q + E КОМБИНАЦИЯ"; spellName.TextColor3 = white end
 end
 refreshSpell()
+
+local function castSelection()
+	if not root then return end
+	local spell = Rules.compile(queue)
+	local now = os.clock()
+	if spell and now - lastLocalCast >= Rules.Cooldown[spell] then
+		lastLocalCast = now
+		remote:FireServer("cast", table.clone(queue), {x = camera.CFrame.LookVector.X, y = camera.CFrame.LookVector.Y, z = camera.CFrame.LookVector.Z})
+		table.clear(queue)
+		refreshSpell()
+	end
+end
 
 local function beam(a, b, color, width, life)
 	local delta = b - a
@@ -189,7 +200,6 @@ remote.OnClientEvent:Connect(function(kind, payload)
 end)
 
 local function attachCharacter(newCharacter)
-	playerControls:Disable()
 	character = newCharacter
 	humanoid = character:WaitForChild("Humanoid")
 	root = character:WaitForChild("HumanoidRootPart")
@@ -216,15 +226,8 @@ UserInputService.InputBegan:Connect(function(input, processed)
 		if #queue < Rules.MaxQueue then table.insert(queue, key == Enum.KeyCode.Q and "fire" or "lightning") end
 		refreshSpell()
 	elseif key == Enum.KeyCode.C then table.clear(queue); refreshSpell()
-	elseif input.UserInputType == Enum.UserInputType.MouseButton1 and root then
-		local spell = Rules.compile(queue)
-		local now = os.clock()
-		if spell and now - lastLocalCast >= Rules.Cooldown[spell] then
-			lastLocalCast = now
-			remote:FireServer("cast", table.clone(queue), {x = camera.CFrame.LookVector.X, y = camera.CFrame.LookVector.Y, z = camera.CFrame.LookVector.Z})
-			table.clear(queue)
-			refreshSpell()
-		end
+	elseif input.UserInputType == Enum.UserInputType.MouseButton1 or key == Enum.KeyCode.F then
+		castSelection()
 	end
 end)
 UserInputService.InputEnded:Connect(function(input) held[input.KeyCode] = nil end)
@@ -237,6 +240,10 @@ end)
 
 RunService:BindToRenderStep("RiftboundBodycam", Enum.RenderPriority.Camera.Value + 1, function(dt)
 	if not character or not root or not head or humanoid.Health <= 0 then return end
+	-- Roblox's default transparency controller can restore avatar parts during play.
+	for _, descendant in ipairs(character:GetDescendants()) do
+		if descendant:IsA("BasePart") then descendant.LocalTransparencyModifier = 1 end
+	end
 	if workspace.CurrentCamera ~= camera then camera = workspace.CurrentCamera; for _, p in ipairs({leftArm, rightArm, leftHand, rightHand, staff, staffTip}) do p.Parent = camera end end
 	UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
 	UserInputService.MouseIconEnabled = false
@@ -259,11 +266,11 @@ RunService:BindToRenderStep("RiftboundBodycam", Enum.RenderPriority.Camera.Value
 	camera.FieldOfView += ((held[Enum.KeyCode.LeftShift] and 86 or 79) - camera.FieldOfView) * math.min(1, dt * 7)
 	local cf = camera.CFrame
 	local armSwing = math.sin(stride) * (moving and 0.15 or 0.025)
-	leftArm.CFrame = cf * CFrame.new(-0.7, -1.1 + armSwing + castKick * 0.35, -1.35) * CFrame.Angles(-0.42 - castKick * 0.5, 0, -0.25)
-	rightArm.CFrame = cf * CFrame.new(0.83, -1.05 - armSwing, -1.12) * CFrame.Angles(-0.28, 0, 0.22)
-	leftHand.CFrame = leftArm.CFrame * CFrame.new(0, -1.1, 0)
-	rightHand.CFrame = rightArm.CFrame * CFrame.new(0, -1.1, 0)
-	staff.CFrame = cf * CFrame.new(1.05, -1.05 - armSwing, -2.25) * CFrame.Angles(math.rad(20), 0, math.rad(12))
-	staffTip.CFrame = staff.CFrame * CFrame.new(0, 0, -2.15)
+	leftArm.CFrame = cf * CFrame.new(-0.96, -1.4 + armSwing + castKick * 0.25, -2.15) * CFrame.Angles(-0.75 - castKick * 0.45, 0, -0.24)
+	rightArm.CFrame = cf * CFrame.new(0.96, -1.46 - armSwing, -2.05) * CFrame.Angles(-0.6, 0, 0.21)
+	leftHand.CFrame = leftArm.CFrame * CFrame.new(0, 0.7, 0)
+	rightHand.CFrame = rightArm.CFrame * CFrame.new(0, 0.7, 0)
+	staff.CFrame = cf * CFrame.new(1.08, -1.22 - armSwing, -3.05) * CFrame.Angles(math.rad(14), 0, math.rad(12))
+	staffTip.CFrame = staff.CFrame * CFrame.new(0, 0, -1.15)
 	clock.Text = string.format("● REC  %02d:%02d", math.floor(workspace.DistributedGameTime / 60), math.floor(workspace.DistributedGameTime % 60))
 end)

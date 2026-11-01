@@ -31,8 +31,14 @@ end
 
 local function addFire(model)
 	if burning[model] or model:GetAttribute("Destroyed") then return end
-	local anchor = model.PrimaryPart
-	if not anchor then return end
+	if not model.PrimaryPart then return end
+	local anchor = Instance.new("Part")
+	anchor.Name = "Burning source"
+	anchor.Size = Vector3.new(0.2, 0.2, 0.2)
+	anchor.Transparency = 1
+	anchor.Anchored, anchor.CanCollide, anchor.CanQuery = true, false, false
+	anchor.Position = center(model) + Vector3.new(0, model.Name:match("Hut") and 10 or model.Name:match("Pine") and 6 or 2, 0)
+	anchor.Parent = model
 	local flame = Instance.new("Fire")
 	flame.Name = "RiftboundFire"
 	flame.Color = Color3.fromRGB(255, 108, 34)
@@ -47,7 +53,7 @@ local function addFire(model)
 	smoke.RiseVelocity = 7
 	smoke.Size = 9
 	smoke.Parent = anchor
-	burning[model] = {age = 0, flame = flame, smoke = smoke}
+	burning[model] = {age = 0, anchor = anchor}
 	remote:FireAllClients("ignite", center(model))
 end
 
@@ -55,7 +61,7 @@ local function destroyModel(model)
 	if model:GetAttribute("Destroyed") then return end
 	model:SetAttribute("Destroyed", true)
 	local state = burning[model]
-	if state then state.flame:Destroy(); state.smoke:Destroy(); burning[model] = nil end
+	if state then state.anchor:Destroy(); burning[model] = nil end
 	local pos = center(model)
 	remote:FireAllClients("collapse", pos)
 	local count = 0

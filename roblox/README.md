@@ -9,7 +9,7 @@ queue. It is a short first-person village scene, not a port of the full 8×8 gam
 2. Click **Play**. The server creates the village at runtime. Roblox does not
    need the browser server or Railway for this project.
 3. Use `WASD` to move, mouse to look, `Shift` to sprint. Press `Q` for fire,
-   `E` for lightning, or `Q` then `E` for stormfire. Left click to cast, `C`
+   `E` for lightning, or `Q` then `E` for stormfire. Left click or press `F` to cast, `C`
    to clear the queue. Aim at a hut, fence, tree, or training raider.
 
 The starting point is at the south end of the village road. Fire spreads among
@@ -55,8 +55,11 @@ each file with `luau-compile --binary` and rebuild with Rojo.
 
 ## Verification status
 
-Rojo builds the `.rbxlx` and the Luau parser accepts all scripts. Roblox Studio
-was not installed in the build environment, so in-engine play and visual checks
-are still required. This prototype uses Roblox parts and built-in effects; it
-will not reproduce the video footage's photorealistic rendering or licensed
-Magicka assets.
+Rojo builds the `.rbxlx` and the Luau parser accepts all scripts. The same
+scripts were loaded into a Studio test place through MCP and checked in play
+mode: first-person camera, movement, HUD, fire selection and casting worked.
+The first playtest revealed an infinite wait for `PlayerModule`; it was fixed.
+The village now uses overcast clouds, realistic lighting, textured built-in
+materials and denser details. The footage's photorealistic houses, trees,
+characters and hand animation still require higher fidelity imported meshes,
+textures and animation; the bundled FBX kit is lower fidelity than the video.
