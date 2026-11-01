@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ru">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#152321"><title>Riftbound — Арена стихий</title><meta name="description" content="Браузерная магическая арена 8×8: сражайтесь с другом по нику или против ботов."><link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="style.css"></head>
+<body>
+<canvas id="world" aria-label="Трёхмерная арена магов"></canvas>
+<div id="vignette"></div>
+<header>
+ <div class="brand"><div class="sigil">✧</div><div><h1>RIFTBOUND</h1><span>АРЕНА СТИХИЙ</span></div></div>
+ <div class="match"><div class="side blue"><span>ЛАЗУРНЫЙ ОРДЕН</span><b id="blueScore">0</b></div><div class="clock"><small>8 <i>×</i> 8</small><strong id="clock">00:00</strong></div><div class="side red"><b id="redScore">0</b><span>БАГРОВЫЙ КОВЕН</span></div></div>
+ <div class="top-actions"><span class="build" id="modeBadge"><i></i> БОТЫ · ОФЛАЙН</span><button id="helpBtn" class="icon-btn" title="Управление" aria-label="Управление">?</button><button id="pauseBtn" class="icon-btn" title="Пауза" aria-label="Пауза">II</button></div>
+</header>
+<div class="team-strip" id="teamStrip"></div>
+<div class="objective"><span class="diamond">◇</span><div><small>КОНТРОЛЬ КАРТЫ</small><strong id="objectiveText">Захватите святилища</strong></div><span class="objective-state" id="objectiveState">0 / 2</span></div>
+<div id="feed" aria-live="polite"></div>
+<section class="intro" id="intro">
+ <div class="eyebrow"><span></span> ТУМАННЫЕ РУИНЫ <span></span></div>
+ <h2>Магия —<br>в твоих руках.</h2><p>Восемь стихий. Две команды.<br>Один мир, который не переживёт<br>ваши эксперименты.</p>
+ <div class="intro-rule"></div><div class="intro-mode"><b>8 × 8</b><span>КОМАНДНАЯ БИТВА<br><small>Вы, друг по нику и 14 ботов</small></span></div>
+ <form id="onlineForm" class="online-form"><label for="nickInput">ВАШ НИК</label><div class="online-row"><input id="nickInput" maxlength="18" minlength="2" autocomplete="nickname" placeholder="Введите ник" required><button type="submit">ВОЙТИ ОНЛАЙН →</button></div></form>
+ <div id="onlineLobby" class="online-lobby hidden"><p id="onlineStatus" role="status">Подключение…</p><label for="friendInput">ПРИГЛАСИТЬ ПО НИКУ</label><div class="online-row"><input id="friendInput" maxlength="18" placeholder="Ник друга"><button id="inviteBtn" type="button">ПОЗВАТЬ</button></div><div id="onlinePlayers" class="online-players"></div><div id="incomingInvite" class="incoming-invite hidden"><span id="inviteText"></span><div><button id="acceptInvite" type="button">ПРИНЯТЬ</button><button id="declineInvite" type="button">ОТКЛОНИТЬ</button></div></div></div>
+ <button id="playBtn" class="primary">ИГРАТЬ С БОТАМИ <span>→</span></button><button id="watchBtn" class="text-btn">Осмотреть арену</button>
+ <div class="intro-foot">Рабочий эскиз графики и боя<br>Самостоятельные модели · WebGL</div>
+</section>
+<div class="location"><span>01</span><div>ТУМАННЫЕ РУИНЫ<small>Пограничье двух орденов</small></div></div>
+<div id="message" role="status"></div>
+<div id="respawn" class="hidden"><small>ВАША МАГИЯ ЕЩЁ НУЖНА ОРДЕНУ</small><h2>Возвращение через <span id="respawnTime">5</span></h2></div>
+<div id="touchControls" aria-label="Сенсорное управление">
+ <div class="touch-health"><span>СТРАННИК</span><div><i id="touchHealthFill"></i><b id="touchHealthText">1000 / 1000</b></div></div>
+ <div class="touch-zoom"><button id="zoomIn" aria-label="Приблизить камеру">+</button><button id="zoomOut" aria-label="Отдалить камеру">−</button></div>
+ <div id="movePad" class="touch-pad move-pad" role="group" aria-label="Джойстик движения"><span class="pad-cross"></span><span class="pad-knob"></span><small>ДВИЖЕНИЕ</small></div>
+ <div id="aimPad" class="touch-pad aim-pad" role="group" aria-label="Джойстик прицеливания и заклинания"><span class="pad-cross"></span><span class="pad-knob">✦</span><small>ЦЕЛЬ И КАСТ</small></div>
+ <div class="touch-actions"><button id="selfCast" aria-label="Заклинание на себя"><span>✳</span>НА СЕБЯ</button><button id="areaCast" aria-label="Заклинание вокруг себя"><span>◎</span>ВОКРУГ</button><button id="quickShield" aria-label="Быстрый щит"><span>⬡</span>ЩИТ</button></div>
+ <div class="touch-caption">Левый — идти · правый — направить магию</div>
+</div>
+<footer>
+ <section class="map-panel"><canvas id="minimap" width="230" height="158" aria-label="Мини-карта"></canvas><div class="map-caption"><span><i></i> ВЫ — ЛАЗУРНЫЙ ОРДЕН</span><button id="cameraBtn" title="Вернуть камеру к герою">⌖</button></div></section>
+ <section class="hero-panel"><div class="portrait"><svg viewBox="0 0 80 90"><path d="M12 84 22 51 40 38 58 51 68 84Z" fill="#368a9b"/><path d="M19 49 29 18 40 5 52 20 61 49 42 62Z" fill="#91c6bd"/><path d="M28 44 35 28 48 30 53 46 41 54Z" fill="#172e31"/><path d="m33 40 5 1m7 0 5-1" stroke="#e2e4b0" stroke-width="2"/><path d="m14 85 10-31 8 29" fill="#246075"/><path d="m63 52 6 32" stroke="#d3b57b" stroke-width="4"/></svg><span>01</span></div><div class="hero-info"><div class="hero-name"><span id="heroName">Странник</span> <span>ВАШ МАГ</span></div><div class="health-track"><div id="healthFill"></div><strong id="healthText">1000 / 1000</strong></div><div id="statuses">Все стихии доступны</div><div class="stats"><span>⚔ <b id="kills">0</b> убийств</span><span>✦ <b id="deaths">0</b> смертей</span></div></div></section>
+ <section class="spell-panel"><div class="panel-heading"><span>ВАШЕ ЗАКЛИНАНИЕ</span><button id="clearBtn">ОЧИСТИТЬ <kbd>BS</kbd></button></div><div id="queue" class="queue"></div><div class="spell-bottom"><strong id="spellName">Соберите комбинацию</strong><span>ПКМ <small>применить</small></span></div></section>
+ <section class="elements-panel"><div class="panel-heading"><span>СТИХИИ</span><button id="controlsLink">Управление →</button></div><div id="elements"></div></section>
+</footer>
+<div class="hint"><span>ЛКМ</span> движение <i>·</i> <span>ПКМ</span> заклинание <i>·</i> <span>SHIFT + ПКМ</span> вокруг себя <i>·</i> <span>СКМ</span> на себя <i>·</i> <span>КОЛЕСО</span> масштаб</div>
+<dialog id="help"><button class="close" id="closeHelp" aria-label="Закрыть">×</button><div class="eyebrow">ПОЛЕВАЯ КНИГА МАГА</div><h2>Сначала собери.<br>Потом колдуй.</h2><p>Добавляйте до пяти элементов клавишами Q W E R / A S D F или кнопками внизу. Комбинация определяет форму и свойства магии.</p><div class="help-grid desktop-help"><span>ЛКМ</span><p>Идти в указанную точку</p><span>ПКМ / удержание</span><p>Направленное заклинание</p><span>Shift + ПКМ</span><p>Магия вокруг себя</p><span>СКМ</span><p>Применить на себя</p><span>Пробел</span><p>Быстрый защитный щит</p><span>Backspace</span><p>Убрать последний элемент</p><span>Esc</span><p>Пауза только в игре с ботами</p></div><div class="help-grid touch-help"><span>Левый джойстик</span><p>Движение. Отпустите, чтобы остановиться.</p><span>Правый джойстик</span><p>Тяните в сторону цели: магия применяется, пока держите. Короткое касание — один каст.</p><span>Стихии внизу</span><p>Собрать комбинацию до пяти элементов.</p><span>На себя / Вокруг</span><p>Другие способы применить собранную магию.</p><span>Щит</span><p>Быстрая защита без изменения комбинации.</p><span>+ / −</span><p>Масштаб камеры.</p></div><p class="recipe">Попробуйте: <b>вода → молния</b> по мокрой цели, <b>земля + огонь</b> для огненного камня или <b>щит + огонь</b> для защитного барьера.</p><p class="disclaimer">В сетевой игре хост рассчитывает бой для обоих игроков. Остальные 14 магов — боты. Коэффициенты урона предварительные.</p><button id="helpPlay" class="primary">ПОНЯТНО, К БОЮ <span>→</span></button></dialog>
+<dialog id="result"><div class="eyebrow">БИТВА ЗАВЕРШЕНА</div><h2 id="resultTitle">Орден победил</h2><p id="resultText"></p><button class="primary" id="restartBtn">НОВАЯ БИТВА →</button></dialog>
+<script type="module" src="game.js"></script>
+</body></html>

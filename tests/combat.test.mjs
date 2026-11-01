@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {compile,resolveDamage} from '../dist/combat.js';
+const target=()=>({hp:1000,wet:0,burning:0,chill:0,frozen:0,ward:0});
+test('wet amplifies lightning only while the state is active',()=>{const a=target();resolveDamage(a,{water:8},1);const hit=resolveDamage(a,{lightning:100},2);assert.equal(hit.total,180);const expired=resolveDamage(a,{lightning:100},7);assert.equal(expired.total,100);});
+test('water extinguishes burning and fire removes wet',()=>{const a=target();resolveDamage(a,{fire:40},1);assert.ok(a.burning>1);resolveDamage(a,{water:8},2);assert.equal(a.burning,0);assert.ok(a.wet>2);resolveDamage(a,{fire:40},3);assert.equal(a.wet,0);assert.equal(a.burning,0);});
+test('matching elemental ward protects its component, not other damage',()=>{const a=target();a.ward=10;a.wardElement='fire';assert.equal(resolveDamage(a,{fire:100,earth:100},1).total,130);});
+test('cold can freeze a wet target through accumulated exposure',()=>{const a=target();a.wet=10;for(let i=0;i<3;i++)resolveDamage(a,{cold:10},1);assert.ok(a.frozen>1);});
+test('damage never leaves negative health',()=>{const a=target();resolveDamage(a,{earth:3000},1);assert.equal(a.hp,0);});
+test('mixed attacks preserve damage components and cast form',()=>{const rock=compile(['earth','fire']);assert.equal(rock.type,'projectile');assert.ok(rock.damage.earth>0);assert.ok(rock.damage.fire>0);assert.equal(compile(['shield','earth']).type,'wall');assert.equal(compile(['life']).type,'heal');});

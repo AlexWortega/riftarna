@@ -1,0 +1,13 @@
+{
+  "name": "riftbound-arena",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Browser elemental arena with nickname multiplayer and mobile controls",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test tests/*.test.mjs"
+  },
+  "engines": { "node": ">=20" },
+  "dependencies": { "ws": "^8.18.3" }
+}
