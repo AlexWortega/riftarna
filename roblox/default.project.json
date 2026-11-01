@@ -1,0 +1,35 @@
+{
+  "name": "Riftbound Bodycam",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "Riftbound": {
+        "$className": "Folder",
+        "SpellRules": {"$path": "src/ReplicatedStorage/SpellRules.luau"}
+      }
+    },
+    "ServerScriptService": {
+      "World": {"$path": "src/ServerScriptService/World.server.luau"},
+      "Magic": {"$path": "src/ServerScriptService/Magic.server.luau"}
+    },
+    "StarterPlayer": {
+      "StarterPlayerScripts": {
+        "Bodycam": {"$path": "src/StarterPlayerScripts/Bodycam.client.luau"}
+      }
+    },
+    "Workspace": {
+      "$properties": {
+        "Gravity": 196.2
+      }
+    },
+    "Lighting": {
+      "$properties": {
+        "ClockTime": 16.6,
+        "Brightness": 1.4,
+        "EnvironmentDiffuseScale": 0.35,
+        "EnvironmentSpecularScale": 0.4,
+        "GlobalShadows": true
+      }
+    }
+  }
+}

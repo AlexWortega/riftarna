@@ -1,0 +1,10 @@
+local Rules = require("../src/ReplicatedStorage/SpellRules")
+
+assert(Rules.compile({"fire"}) == "fire")
+assert(Rules.compile({"lightning"}) == "lightning")
+assert(Rules.compile({"fire", "lightning"}) == "stormfire")
+assert(Rules.compile({"lightning", "fire"}) == "stormfire")
+assert(Rules.compile({"water"}) == nil)
+assert(Rules.compile({"fire", "lightning", "fire"}) == nil)
+assert(Rules.compile({}) == nil)
+print("spell rules OK")
