@@ -42,9 +42,9 @@ export function createDestruction(THREE,scene,treeData,{touchMode=false}={}) {
  // The whole forest uses four draw calls; each tree can still burn or disappear independently.
  const trees=treeData.map((t,i)=>({...t,id:i,hp:100,burn:0,dead:false,emit:0,spread:0}));
  const forestMeshes=[];
- const forestShapes=[new THREE.CylinderGeometry(.23,.45,3.5,6),...Array.from({length:3},(_,j)=>new THREE.ConeGeometry(2.1-j*.4,3.5,7))];
+ const forestShapes=[new THREE.CylinderGeometry(.23,.45,3.5,6),...Array.from({length:3},(_,j)=>new THREE.BoxGeometry(3.3-j*.45,2.1,3.3-j*.45))];
  for(let layer=0;layer<4;layer++){const m=new THREE.InstancedMesh(forestShapes[layer],new THREE.MeshStandardMaterial({color:0xffffff,roughness:1,side:THREE.FrontSide}),trees.length);m.castShadow=!touchMode;m.receiveShadow=true;m.frustumCulled=false;scene.add(m);forestMeshes.push(m);}
- const leafColors=['#375c43','#466b49','#527950'];
+ const leafColors=['#426f66','#568e80','#76a598'];
  function renderTree(t){const black=clamp((100-t.hp)/110,0,.78),heat=t.burn>0?Math.min(.45,t.burn/12):0;
   for(let j=0;j<4;j++){const m=forestMeshes[j],y=j===0?(t.dead?.45:1.5):3.4+(j-1)*1.1;
    dummy.position.set(t.x,y*t.scale,t.z);dummy.rotation.set(0,t.rotation+(j===0?0:j*.6),0);if(t.dead&&j===0)dummy.scale.set(t.scale*.8,t.scale*.25,t.scale*.8);else dummy.scale.setScalar(t.dead?0:t.scale);dummy.updateMatrix();m.setMatrixAt(t.id,dummy.matrix);
